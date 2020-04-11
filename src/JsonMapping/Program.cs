@@ -18,9 +18,7 @@ namespace JsonMapping
         public static void MapJson()
         {
             var jsonDataString = JsonData.EmployeeJsonData;
-            var mappingString = AdditionalDataMapping.Mapping;
-            JObject jsonData = JObject.Parse(jsonDataString);
-            JArray mappingArray = JArray.Parse(mappingString);
+            JObject jsonData = JObject.Parse(jsonDataString);            
 
             var employee = new Employee
             {
@@ -30,53 +28,60 @@ namespace JsonMapping
                
             };
 
-            var additionalDataDynamicObject = new ExpandoObject();
-            // loop over the mapping file
-            foreach (var token in mappingArray)
-            {
-                // get the mapping details
-                var target = token.SelectToken("$.target").Value<string>();
-                var src = token.SelectToken("$.src").Value<string>();
-                var srcFields = token.SelectToken("$.fields")?.Value<string>();
-              
-                if (srcFields != null)
-                {
-                    var jsonSrcData = jsonData.SelectToken(src);
-                    if (jsonSrcData.Type == JTokenType.Array)
-                    {
-                        var jsonArrayData = (JArray)jsonSrcData;
-                        ((IDictionary<string, object>)additionalDataDynamicObject).Add(target, GetTargetJArray(jsonArrayData, srcFields));
-
-                    }
-                    else
-                    {
-                        var srcJObject = (JObject)jsonSrcData;
-                        ((IDictionary<string, object>)additionalDataDynamicObject).Add(target, GetTargetJObject(srcJObject, srcFields));
-                    }
-                }
-                else
-                {
-                     ((IDictionary<string, object>)additionalDataDynamicObject).Add(target, jsonData.SelectToken(src));
-                }
-            }
-
-            employee.AdditionalData = additionalDataDynamicObject;
+            employee.AdditionalData = GetAdditionalData(jsonData);
 
             var jsonStringReturned = JsonConvert.SerializeObject(employee);
         }
 
-        public static JArray GetTargetJArray(JArray jsonArrayData, string fields)
+        public static ExpandoObject GetAdditionalData(JObject jsonData)
+        {
+            JArray mappingArray = JArray.Parse(AdditionalDataMapping.Mapping);
+            var additionalDataDynamicObject = new ExpandoObject();
+            foreach (var token in mappingArray)
+            {
+                var target = token.SelectToken("$.target").Value<string>();
+                var src = token.SelectToken("$.src").Value<string>();
+                var srcFields = token.SelectToken("$.fields")?.Value<string>();
+
+                ((IDictionary<string, object>)additionalDataDynamicObject).Add(target, MapTargetSourceFields(jsonData, src, srcFields));
+            }
+
+            return additionalDataDynamicObject;
+        }
+
+        public static object MapTargetSourceFields(JObject jsonData, string src, string fields)
+        {
+            var jsonSrcData = jsonData.SelectToken(src);
+            if (fields == null)
+            {
+                return jsonSrcData;
+            }
+          
+            if (jsonSrcData.Type == JTokenType.Array)
+            {
+                var jsonArrayData = (JArray)jsonSrcData;
+                return MapTargetSrcJArray(jsonArrayData, fields);
+
+            }
+            else
+            {
+                var srcJObject = (JObject)jsonSrcData;
+                return MapTargetSrcJObject(srcJObject, fields);
+            }
+        }
+
+        public static JArray MapTargetSrcJArray(JArray jsonArrayData, string fields)
         {
             var additionalItem = new JArray();
             foreach (var dataObject in jsonArrayData)
             {
-                additionalItem.Add(GetTargetJObject((JObject)dataObject, fields));
+                additionalItem.Add(MapTargetSrcJObject((JObject)dataObject, fields));
                
             }
             return additionalItem;
         }
 
-        public static JObject GetTargetJObject(JObject src, string srcFields)
+        public static JObject MapTargetSrcJObject(JObject src, string srcFields)
         {
             var targetObject = new JObject();
             foreach (var srcField in srcFields.Split(','))
