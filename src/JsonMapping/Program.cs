@@ -3,6 +3,7 @@ using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
 using System.Dynamic;
+using System.Linq;
 
 namespace JsonMapping
 {
@@ -34,7 +35,49 @@ namespace JsonMapping
             {
                 var target = token.SelectToken("$.target").Value<string>();
                 var src = token.SelectToken("$.src").Value<string>();
-                ((IDictionary<string, object>)additionalDataDynamicObject).Add(target, jsonData.SelectToken(src));
+                var srcFields = token.SelectToken("$.fields")?.Value<string>();
+              
+                if (srcFields != null)
+                {
+                    var jsonSrcFields = jsonData.SelectTokens(src);
+                    JArray addtionalItem = new JArray(); 
+                    foreach (var jsonSrcField in jsonSrcFields)
+                    {
+                        if (jsonSrcField.Type == JTokenType.Array)
+                        {
+                            var jsonArraySrcFields = (JArray)jsonSrcField;
+                            foreach (var jObject in jsonArraySrcFields)
+                            {
+                                var jObj = (JObject)jObject;
+                                var targetObject = new JObject();
+                                addtionalItem.Add(targetObject);
+                                foreach (var srcField in srcFields.Split(','))
+                                {
+                                    targetObject.Add(jObj.Property(srcField));
+                                }
+                            }
+                            ((IDictionary<string, object>)additionalDataDynamicObject).Add(target, addtionalItem);
+
+                        }
+                        else
+                        {
+                            var srcJObject = (JObject)jsonSrcField;
+                            var targetObject = new JObject();
+                            foreach (var srcField in srcFields.Split(','))
+                            {
+                                targetObject.Add(srcJObject.Property(srcField));
+                            }
+                            ((IDictionary<string, object>)additionalDataDynamicObject).Add(target, targetObject);
+                        }
+                       
+                    }
+                   
+                }
+                else
+                {
+                     ((IDictionary<string, object>)additionalDataDynamicObject).Add(target, jsonData.SelectToken(src));
+                }
+               
 
             }
 

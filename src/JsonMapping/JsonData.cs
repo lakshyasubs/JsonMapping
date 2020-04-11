@@ -15,10 +15,24 @@ namespace JsonMapping
 						'id': 'D1010',
 						'name': 'IT'
 					},
+					'additionalData':{
+						'hasAccessToLevel4':'Yes',
+						'eligibleForVouchers':'No',
+						
+						
+					    },
+					'transport': { 'vehicleType':'car', 'vehicleNumber':'ABC123', 'vehicleFuel':'Petrol', 'onloan':'true' },
+					'transport1': [
+									{ 'vehicleType':'car', 'vehicleNumber':'ABC123', 'vehicleFuel':'Petrol', 'onloan':'true' },
+									{ 'vehicleType':'bike', 'vehicleNumber':'biek123', 'vehicleFuel':'Petrol', 'onloan':'false' }
+								],
 					'projects': [{
 							'id': 'prj01',
 							'name': 'Project 1',
 							'manager': 'Manager 1'
+							
+									
+								
 						}, {
 							'id': 'prj02',
 							'name': 'Project 2',
