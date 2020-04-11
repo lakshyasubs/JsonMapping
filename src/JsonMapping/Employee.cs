@@ -18,7 +18,7 @@ namespace JsonMapping
  * 
  * Expected output
  * 
- * {
+ *{
 	"Id": "q2334",
 	"Name": "John Tudor",
 	"DeptId": "D1010",
@@ -35,9 +35,22 @@ namespace JsonMapping
 				"manager": "Manager 2"
 			}
 		],
+		"transport": {
+			"vehicleType": "car",
+			"vehicleNumber": "ABC123"
+		},
+		"transport1": [{
+				"vehicleType": "car",
+				"vehicleNumber": "ABC123"
+			}, {
+				"vehicleType": "bike",
+				"vehicleNumber": "biek123"
+			}
+		],
 		"attributes_x_access_id": "ADS7889DSD"
 	}
 }
+
 
  * 
  * 
