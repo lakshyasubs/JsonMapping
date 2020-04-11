@@ -60,28 +60,28 @@ namespace JsonMapping
             if (jsonSrcData.Type == JTokenType.Array)
             {
                 var jsonArrayData = (JArray)jsonSrcData;
-                return MapTargetSrcJArray(jsonArrayData, fields);
+                return GetSrcJArraySelectedFields(jsonArrayData, fields);
 
             }
             else
             {
                 var srcJObject = (JObject)jsonSrcData;
-                return MapTargetSrcJObject(srcJObject, fields);
+                return GetSrcJObjectSelectedFields(srcJObject, fields);
             }
         }
 
-        public static JArray MapTargetSrcJArray(JArray jsonArrayData, string fields)
+        public static JArray GetSrcJArraySelectedFields(JArray jsonArrayData, string fields)
         {
             var additionalItem = new JArray();
             foreach (var dataObject in jsonArrayData)
             {
-                additionalItem.Add(MapTargetSrcJObject((JObject)dataObject, fields));
+                additionalItem.Add(GetSrcJObjectSelectedFields((JObject)dataObject, fields));
                
             }
             return additionalItem;
         }
 
-        public static JObject MapTargetSrcJObject(JObject src, string srcFields)
+        public static JObject GetSrcJObjectSelectedFields(JObject src, string srcFields)
         {
             var targetObject = new JObject();
             foreach (var srcField in srcFields.Split(','))
